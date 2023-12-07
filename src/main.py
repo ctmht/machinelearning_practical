@@ -1,3 +1,4 @@
-from preprocessing.text_preprocessing import preprocess_tweets
+from preprocessing import *
 
-tweets = preprocess_tweets("../../data/train_text.txt")
+tweets = text_preprocessing.preprocess_tweets("../../data/train_text.txt")
+tweet_vectors = embeddings.create_tweet_embeddings(tweets)
