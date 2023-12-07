@@ -38,7 +38,7 @@ def preprocess_tweet(tweet):
     return tweet
 
 
-def load_text(file_name):
+def preprocess_tweets(file_name):
     tweets = []
     with open(file_name, 'r', encoding='utf-8') as file:
         for tweet in file:

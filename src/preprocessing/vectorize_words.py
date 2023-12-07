@@ -1,11 +1,11 @@
 from gensim.models import Word2Vec
-from machinelearning_practical.src.preprocessing.text_preprocessing import load_text
+from machinelearning_practical.src.preprocessing.text_preprocessing import preprocess_tweets
 from sklearn.manifold import TSNE
 import pandas as pd
 import matplotlib.pyplot as plt
 
 # tweets = load_text("../../data/train_text_sample.txt")
-tweets = load_text("../../data/train_text.txt")
+tweets = preprocess_tweets("../../data/train_text.txt")
 print(tweets[0])
 
 # train model

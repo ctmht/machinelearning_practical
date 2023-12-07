@@ -30,6 +30,7 @@ def plot_histogram(dictionary):
     plt.show()
 
 
-labels = load_labels_as_dict("train_labels.txt")
-print_dict(labels)
-plot_histogram(labels)
+if __name__ == '__main__':
+    labels = load_labels_as_dict("../data/train_labels.txt")
+    print_dict(labels)
+    plot_histogram(labels)
