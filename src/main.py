@@ -4,3 +4,4 @@ from preprocessing.embeddings import create_tweet_embeddings, create_word_embedd
 
 tweets = preprocess_tweets("../../data/train_text.txt")
 tweet_vectors = create_tweet_embeddings(tweets)
+word_vectors = create_word_embeddings(tweets)

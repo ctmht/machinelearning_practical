@@ -1,4 +1,4 @@
-def create_word_embeddings():
+def create_word_embeddings(tweets):
     pass
 
 
