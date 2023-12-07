@@ -1,0 +1,20 @@
+### WE SHOULD CHANGE THIS INTO THE REQUIREMENTS-LIKE FILE ###
+
+
+
+To download libraries and other necessary stuff,
+you need to type the following in your terminal:
+
+pip install nltk
+pip install --upgrade gensim
+pip install scikit-learn
+pip install matplotlib
+pip install pandas
+
+
+
+In the python shell (type python in the terminal to start):
+
+>>> import nltk
+>>> nltk.download('all')
+(optionally) >>> quit()
