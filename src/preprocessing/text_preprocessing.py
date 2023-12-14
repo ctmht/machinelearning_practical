@@ -2,6 +2,7 @@ from nltk.tokenize import word_tokenize
 from nltk.corpus import stopwords
 import string
 import re
+import numpy as np
 
 
 def remove_numbers(text):
@@ -45,3 +46,13 @@ def preprocess_tweets(file_name):
             tweet = preprocess_tweet(tweet)
             tweets.append(tweet)
     return tweets
+
+
+# Preprocess the labels
+def preprocess_labels(file_name):
+    labels = []
+    with open(file_name, "r", encoding="utf-8") as file:
+        for label in file:
+            label = int(label.strip())
+            labels.append(label)
+    return np.array(labels)
