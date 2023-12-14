@@ -1,5 +1,7 @@
 import os
+
 import numpy as np
+
 from preprocessing.text_preprocessing import preprocess_tweets, preprocess_labels
 from preprocessing.embeddings import *
 from gensim.models import Word2Vec
@@ -40,9 +42,10 @@ def main():
     # Evaluate both models
     print("evaluate")
     baseline_pred = baseline.predict(create_tweet_embeddings(w2v_model, val_tweets))
-    print('Accuracy baseline: \t%f' % (np.sum(baseline_pred == val_labels) / val_labels.size * 100))
     loss, accuracy = model.evaluate(create_tweet_encodings(w2v_model, val_tweets), val_labels)
+    print('Accuracy baseline: \t%f' % (np.sum(baseline_pred == val_labels) / val_labels.size * 100))
     print('Accuracy model: \t%f' % (accuracy * 100))
+    print('Random guess: \t%f' % (np.max(np.unique(val_labels, return_counts=True)[1]) / val_labels.size * 100))
 
 
 if __name__ == '__main__':
