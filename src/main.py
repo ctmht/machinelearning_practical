@@ -1,7 +1,4 @@
 import os
-
-import numpy as np
-
 from preprocessing.text_preprocessing import preprocess_tweets, preprocess_labels
 from preprocessing.embeddings import *
 from gensim.models import Word2Vec
@@ -21,6 +18,9 @@ def main():
     # Preprocess the data
     print("preprocess")
     train_tweets = preprocess_tweets("../data/train_text.txt")
+    with open("../data/preprocessed_tweets.txt", 'w') as file:
+        for tweet in train_tweets[:50]:
+            file.write(' '.join(tweet) + '\n')
     train_labels = preprocess_labels("../data/train_labels.txt")
     val_tweets = preprocess_tweets("../data/val_text.txt")
     val_labels = preprocess_labels("../data/val_labels.txt")
@@ -45,7 +45,7 @@ def main():
     loss, accuracy = model.evaluate(create_tweet_encodings(w2v_model, val_tweets), val_labels)
     print('Accuracy baseline: \t%f' % (np.sum(baseline_pred == val_labels) / val_labels.size * 100))
     print('Accuracy model: \t%f' % (accuracy * 100))
-    print('Random guess: \t%f' % (np.max(np.unique(val_labels, return_counts=True)[1]) / val_labels.size * 100))
+    # print('Random guess: \t%f' % (np.max(np.unique(val_labels, return_counts=True)[1]) / val_labels.size * 100))
 
 
 if __name__ == '__main__':
