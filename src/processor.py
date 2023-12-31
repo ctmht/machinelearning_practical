@@ -78,6 +78,7 @@ class Processor:
 
         Args:
             aug: whether to augment the training data or not
+            res_yield: whether to yield what this call preprocesses
         """
         # TODO: also train word2vec on all entries before yielding
         # TODO: and save trained word2vec model at the end
