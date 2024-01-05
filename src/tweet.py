@@ -4,13 +4,14 @@ from nltk.corpus import stopwords
 
 
 class Tweet:
+    """ Container class for a tweet, handling sentence-level preprocessing """
+
     nlp = spacy.load("en_core_web_trf", disable=['parser', 'ner'])
     stop_words = set(stopwords.words("english"))
 
     def __init__(self, tweet: str):
         """
         Creates a container for a tweet
-
         Args:
             tweet: the string of a tweet
         """
@@ -22,7 +23,6 @@ class Tweet:
         """
         Preprocesses the tweet by removing cluttering characters (punctuation,
         digits, extra spaces), lemmatizing, (and removing stopwords)
-
         Return:
             self.prc_tweet: list of lemmas following these preprocessing steps
         """
@@ -41,17 +41,19 @@ class Tweet:
         """
         Method for removing punctuation, digits, and extra whitespace from a
         given text string
-
         Args:
             text: string to be processed
-
         Return:
             result: lowercase string after cleaning non-word characters
         """
         result = text.lower()
 
         # Replace punctuation and digits with space
-        result = re.sub(r"[…!\"#$%&\'()*+,-./:;<=>? ️@\[\]^_`{|}~\d]", " ", result)
+        result = re.sub(
+            r"[…!\"#$%&\'()*+,-./:;<=>? ️@\[\]^_`{|}~\d]",
+            " ",
+            result
+        )
 
         # Limit whitespaces to one space
         result = re.sub(r"(\s+)", " ", result).strip()
@@ -62,10 +64,8 @@ class Tweet:
     def remove_stopwords(lemmas: [str]) -> [str]:
         """
         Removes stopwords from a list of lemmas
-
         Args:
             lemmas: list of lemmas
-
         Return:
             : list of lemmas with no stopwords
         """
