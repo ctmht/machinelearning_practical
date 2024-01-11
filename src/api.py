@@ -28,5 +28,5 @@ async def predict_emoji(text: ModelInput):
     prediction = int(prediction[0])
     return {'emoji': prediction}
 
-
+# requests can be made in the terminal with the following command:
 # curl -X POST -H "Content-Type: application/json" -d "{\"text\": \"Today is a beautiful day\"}" http://127.0.0.1:8000/emoji_prediction/
