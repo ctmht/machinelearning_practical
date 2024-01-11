@@ -1,7 +1,7 @@
 from sklearn.tree import DecisionTreeClassifier
 
 
-class Baseline():
+class Baseline:
     def __init__(self, max_leaf_nodes=20):
         self.model = DecisionTreeClassifier(max_leaf_nodes=max_leaf_nodes)
 
@@ -12,7 +12,5 @@ class Baseline():
         return self.model.predict(X)
 
 
-
-
-
-
+def baseline_predict(model: Baseline, features):
+    return model.predict(features)

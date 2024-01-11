@@ -1,5 +1,5 @@
 from keras.models import Sequential
-from keras.layers import Dense, Embedding, Bidirectional, Dropout
+from keras.layers import Dense, Embedding
 from keras.layers import LSTM as keras_LSTM
 
 

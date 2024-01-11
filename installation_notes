@@ -12,6 +12,8 @@ pip install matplotlib
 pip install pandas
 pip install keras
 pip install tensorflow
+pip install fastapi
+pip install "uvicorn[standard]"
 
 
 
