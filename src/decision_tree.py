@@ -15,9 +15,11 @@ class DecisionTree(ModelInterface):
 
         self.model = DecisionTreeClassifier(**kwargs)
 
-        self.max_emb = 140
+        self.max_emb = 140 # Max num of 'words' in one tweet
 
     def train(self, data: pd.DataFrame):
+        # No idea if this is good
+
         print("\nTraining Decision Tree Model\n")
 
         train_df = data.query("type == 'train'")

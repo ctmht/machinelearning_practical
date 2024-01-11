@@ -5,7 +5,7 @@ from src.tweet import Tweet
 
 
 class Processor:
-    """ Class handling whole file preprocessing, saving and loading data """
+    """ Class handling whole file preprocessing + saving and loading data """
 
     targets = ["train", "val", "test"]
 

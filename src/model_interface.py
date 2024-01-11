@@ -38,7 +38,7 @@ class ModelInterface:
         """
         return self.model.predict(indata)
 
-    @staticmethod # maybe redundant? idk
+    @staticmethod # maybe redundant?
     def _evaluate_prediction(
             pred_out: np.array,
             true_out: np.array,

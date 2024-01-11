@@ -4,7 +4,7 @@ from nltk.corpus import stopwords
 
 
 class Tweet:
-    """ Container class for a tweet, handling sentence-level preprocessing """
+    """ Container class for a tweet handling sentence-level preprocessing """
 
     nlp = spacy.load("en_core_web_trf", disable=['parser', 'ner'])
     stop_words = set(stopwords.words("english"))
@@ -29,7 +29,7 @@ class Tweet:
         # Clean non-words
         prc = Tweet.clean_nonwords(self.tweet)
 
-        # Lemmatize string and remove stopwords
+        # Lemmatize string (not removing stopwords now)
         self.prc_nlp = Tweet.nlp(prc)
         lemmas: [str] = [token.lemma_.lower() for token in self.prc_nlp]
         self.prc_tweet = lemmas # Tweet.remove_stopwords(lemmas) for RS

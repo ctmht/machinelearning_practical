@@ -25,7 +25,7 @@ class Embedder:
         )
         self._trained: bool = False
 
-    def create_embeddings(self, data: list[list[str]] | list[str]) -> None:
+    def train_embeddings(self, data: list[list[str]] | list[str]) -> None:
         """
         (Re)trains the Word2Vec model to contain embeddings of all words found
         in the data
@@ -58,7 +58,7 @@ class Embedder:
             : the embedding
         """
         if word not in self.w2v_model.wv.key_to_index.keys():
-            self.create_embeddings([word])
+            self.train_embeddings([word])
 
         return self.w2v_model.wv[word]
 

@@ -18,7 +18,7 @@ def main():
 
     # Embeddings
     embedder = Embedder(data_folder)
-    embedder.create_embeddings(df["text"])
+    embedder.train_embeddings(df["text"])
     embedder.save_model()
 
     # Baseline

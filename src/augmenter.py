@@ -2,9 +2,6 @@
 
 class Augmenter:
     pass
-    # classes = ... # static
-    # frequencies = ... # static
-    #
-    # frequency-aware augmentation
-    #
-    # augment(preprocessed_tweet: str) -> list[str] # static
+    # Not implemented because still no idea if good enough
+    # classes = ...
+    # frequencies = ...
