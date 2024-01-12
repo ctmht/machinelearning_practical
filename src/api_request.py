@@ -7,7 +7,7 @@ headers = {"Content-Type": "application/json"}
 
 response = requests.post(url, json=request, headers=headers)
 
-print(response.status_code)
+print("response_status_code:", response.status_code)
 response_dict: dict = response.json()
 
 for key, value in response_dict.items():
