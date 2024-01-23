@@ -33,7 +33,7 @@ def initialize_and_train_lstm(embedding_matrix, max_tweet_len, train_tweet_padde
         model = HyperLSTM(embedding_matrix, max_tweet_len, num_classes=20)
         tuner = kt.Hyperband(
             model,
-            objective="val_accuracy",
+            objective="accuracy",
             max_epochs=10,
             factor=3,
             overwrite=True,
