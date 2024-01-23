@@ -1,11 +1,13 @@
 import os
-from sklearn.utils import class_weight
-from preprocessing.text_preprocessing import *
-from preprocessing.embeddings import *
+import numpy as np
+from preprocess import preprocess
+from embed import embed
+from preprocessing.embeddings import create_word_to_int_map
+from preprocessing.text_preprocessing import longest_preprocessed_tweet
 from gensim.models import Word2Vec
-from baseline import Baseline
-from model import LSTM
-from saving_loading import save
+from baseline import initialize_and_train_baseline
+from model import initialize_and_train_lstm
+from saving_loading import save, load
 
 
 data_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "../data")
@@ -15,59 +17,50 @@ val_text_path = os.path.join(data_dir, "val_text.txt")
 val_labels_path = os.path.join(data_dir, "val_labels.txt")
 
 
+def create_word2vec_and_word2int(train_tweets, save_data=False, load_data=False):
+    if not load_data:
+        w2v_model = Word2Vec(train_tweets, min_count=1)
+        w2i_map = create_word_to_int_map(train_tweets)
+    else:
+        w2v_model = load("../models/w2v_model.pkl")
+        w2i_map = load("../models/w2i_map.pkl")
+
+    if save_data:
+        save(w2v_model, '../models/w2v_model.pkl')
+        save(w2i_map, '../models/w2i_map.pkl')
+
+    return w2v_model, w2i_map, longest_preprocessed_tweet(train_tweets)
+
+
 def main():
+    # preprocess
+    train_tweets, train_labels, train_labels_one_hot, val_tweets, val_labels, val_labels_one_hot \
+        = preprocess(save_data=False, load_data=True)
 
-    # Preprocessing
-    print("preprocess")
-    train_tweets = preprocess_tweets("../data/train_text.txt")
-    with open("../data/preprocessed_tweets.txt", 'w') as file:
-        for tweet in train_tweets[:50]:
-            file.write(' '.join(tweet) + '\n')
-    train_labels = preprocess_labels("../data/train_labels.txt")
-    train_labels_one_hot = preprocess_labels_one_hot("../data/train_labels.txt")
+    w2v_model, w2i_map, max_tweet_len = create_word2vec_and_word2int(train_tweets, save_data=False, load_data=True)
 
-    val_tweets = preprocess_tweets("../data/val_text.txt")
-    val_labels = preprocess_labels("../data/val_labels.txt")
-    val_labels_one_hot = preprocess_labels_one_hot("../data/val_labels.txt")
+    # create embeddings
+    train_tweet_mean_embeddings, \
+        val_tweet_mean_embeddings, \
+        train_tweet_padded_embeddings, \
+        val_tweet_padded_embeddings, \
+        embedding_matrix \
+        = embed(w2v_model, w2i_map, max_tweet_len, train_tweets, val_tweets, save_data=False, load_data=True)
 
-    # Create word2vec and word2int
-    w2v_model = Word2Vec(train_tweets, min_count=1)
-    w2i_map = create_word_to_int_map(train_tweets)
-    max_tweet_len = longest_preprocessed_tweet(train_tweets)
+    # create and train models
+    baseline = initialize_and_train_baseline(train_tweet_mean_embeddings, train_labels,
+                                             save_data=False, load_data=True)
 
-    # Create embeddings for different models
-    print("embeddings")
-    train_tweet_mean_embeddings = create_mean_tweet_embeddings(w2v_model, train_tweets)
-    val_tweet_mean_embeddings = create_mean_tweet_embeddings(w2v_model, val_tweets)
-    train_tweet_padded_embeddings = create_padded_tweet_embeddings(train_tweets, w2i_map, max_tweet_len)
-    val_tweet_padded_embeddings = create_padded_tweet_embeddings(val_tweets, w2i_map, max_tweet_len)
-    embedding_matrix = create_embedding_matrix(w2v_model, w2i_map)
+    model = initialize_and_train_lstm(embedding_matrix, max_tweet_len,
+                                      train_tweet_padded_embeddings, train_labels_one_hot,
+                                      save_data=False, load_data=True)
 
-    # Initialize and train baseline
-    print("baseline")
-    baseline = Baseline()
-    baseline.train(train_tweet_mean_embeddings, train_labels)
-
-    class_weights = class_weight.compute_class_weight('balanced', classes=np.unique(train_labels), y=train_labels)
-    class_weights_dict = dict(enumerate(class_weights))
-
-    # Initialize and train LSTM model
-    print("lstm")
-    model = LSTM(embedding_matrix, max_tweet_len, num_classes=20)
-    print(model.model.summary())
-    model.train(train_tweet_padded_embeddings, train_labels_one_hot, 20, 32)
-
-    # Evaluation
+    # evaluate models
     print('Random guess: \t%f' % (np.max(np.unique(val_labels, return_counts=True)[1]) / val_labels.size * 100))
     baseline_pred = baseline.predict(val_tweet_mean_embeddings)
     print('Accuracy baseline: \t%f' % (np.sum(baseline_pred == val_labels) / val_labels.size * 100))
     loss, accuracy = model.evaluate(val_tweet_padded_embeddings, val_labels_one_hot)
     print('Accuracy model: \t%f' % (accuracy * 100))
-
-    save(baseline, '../models/baseline_model.pkl')
-    save(model, '../models/lstm_model.pkl')
-    save(w2v_model, '../models/w2v_model.pkl')
-    save(w2i_map, '../models/w2i_map.pkl')
 
 
 if __name__ == '__main__':

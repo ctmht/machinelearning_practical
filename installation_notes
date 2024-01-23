@@ -14,7 +14,8 @@ pip install keras
 pip install tensorflow
 pip install fastapi
 pip install "uvicorn[standard]"
-
+pip install wordsegment
+pip install keras-tuner -q
 
 
 In the python shell (type python in the terminal to start):

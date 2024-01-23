@@ -1,8 +1,33 @@
 from nltk.tokenize import word_tokenize
 from nltk.corpus import stopwords
+from wordsegment import segment
+from wordsegment import load as word_segment_load
 import string
 import re
 import numpy as np
+
+word_segment_load()  # for wordsegment to work
+
+
+def split_word(word: str) -> str:
+    split_words = segment(word)
+    return " ".join(split_words)
+
+
+def split_hashtags(text: str) -> str:
+    pattern = r'#(\w+)'
+    words = text.split()
+    for word in words:
+        if re.match(pattern, word):
+            split_words = split_word(word)
+            text = text.replace(word, split_words)
+    return text
+
+
+def remove_at(text):
+    text = text.replace('@user', '')
+    result = re.sub(r'@ ?[A-Za-z]+', '', text)
+    return result
 
 
 def remove_numbers(text):
@@ -32,6 +57,8 @@ def remove_stopwords(text):
 
 def preprocess_tweet(tweet):
     tweet = tweet.lower()
+    tweet = split_hashtags(tweet)
+    tweet = remove_at(tweet)
     tweet = remove_numbers(tweet)
     tweet = remove_punctuation(tweet)
     tweet = remove_whitespace(tweet)
