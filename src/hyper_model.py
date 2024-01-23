@@ -43,7 +43,7 @@ def initialize_and_train_lstm(embedding_matrix, max_tweet_len, train_tweet_padde
 
         tuner.search(train_tweet_padded_embeddings, train_labels_one_hot,
                      epochs=50,
-                     callbacks=[EarlyStopping(monitor='val_accuracy', patience=5)])
+                     callbacks=[EarlyStopping(monitor='accuracy', patience=5)])
 
         best_hps = tuner.get_best_hyperparameters(num_trials=1)[0]
 
