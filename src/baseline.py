@@ -10,7 +10,3 @@ class Baseline:
 
     def predict(self, X):
         return self.model.predict(X)
-
-
-def baseline_predict(model: Baseline, features):
-    return model.predict(features)

@@ -9,6 +9,7 @@ class APIClient:
 
     def run(self, request_text: str) -> None:
         print("REQUEST")
+        print(request_text)
         request: dict[str, str] = {"text": request_text}
 
         response = requests.post(self.url, json=request, headers=self.headers)

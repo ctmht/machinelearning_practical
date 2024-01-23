@@ -56,3 +56,22 @@ def preprocess_labels(file_name):
             label = int(label.strip())
             labels.append(label)
     return np.array(labels)
+
+
+def preprocess_labels_one_hot(file_name):
+    labels = []
+    with open(file_name, "r", encoding="utf-8") as file:
+        for label in file:
+            label = int(label.strip())
+            one_hot = np.zeros(20)
+            one_hot[label] = 1
+            labels.append(one_hot)
+    return np.array(labels)
+
+
+def longest_preprocessed_tweet(tweets):
+    max_tweet_len = 5
+    for tweet in tweets:
+        if len(tweet) > max_tweet_len:
+            max_tweet_len = len(tweet)
+    return max_tweet_len
