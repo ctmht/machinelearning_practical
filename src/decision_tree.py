@@ -34,7 +34,7 @@ class DecisionTree(ModelInterface):
 
         for metric in metrics:
             try:
-                evals.append(metric(pred_out, true_out, average = None))
+                evals.append(metric(pred_out, true_out, average = "macro"))
             except TypeError:
                 evals.append(metric(pred_out, true_out))
 

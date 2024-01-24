@@ -10,6 +10,7 @@ from src.util import load
 def main():
     # LOAD DATA
     load_from_files = True     # load from files if True, preprocess if False
+    augmentation = True
     data_folder = "../data/"
 
     print("Preprocessing")
@@ -17,13 +18,19 @@ def main():
     processor = Processor(data_folder)
     data = processor.get_data(
         from_files = load_from_files,
-        augmented = True
+        augmented = augmentation
     )
     df = pd.DataFrame(data)
-    train_df = df.query("type == 'train'")
-    val_df = df.query("type == 'val'")
+    trainc_df = df.query("type == 'train' or type == 'val'")\
+        .sample(frac = 1).reset_index(drop = True)
+    train_df = df.query("type == 'train'") \
+        .sample(frac=1).reset_index(drop=True)
+    val_df = df.query("type == 'val'")\
+        .sample(frac = 1).reset_index(drop = True)
     test_df = df.query("type == 'test'")
     print(df)
+    print(train_df.shape[0], val_df.shape[0],
+          trainc_df.shape[0], test_df.shape[0])
 
     print("Creating embeddings")
     # Embeddings
@@ -50,9 +57,9 @@ def main():
     }
     baseline = DecisionTree(processor, embedder, **dt_hpar)
 
-    baseline.train(train_df["text"], train_df["label"])
-    predi = baseline.predict(val_df["text"])
-    evalu = baseline.evaluate(predi, val_df["label"], metrics)
+    baseline.train(trainc_df["text"], trainc_df["label"])
+    predi = baseline.predict(test_df["text"])
+    evalu = baseline.evaluate(predi, test_df["label"], metrics)
 
     for metric_name, ev in zip(metric_names, evalu):
         print(metric_name + ":")
