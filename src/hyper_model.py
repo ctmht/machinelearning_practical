@@ -10,10 +10,12 @@ class HyperLSTM(kt.HyperModel):
         self.embedding_matrix = embedding_matrix
         self.max_sequence_length = max_sequence_length
         self.num_classes = num_classes
+        self.batch_size = 0
 
     def build(self, hp):
         model = Sequential()
         vocab_size, embedding_dim = self.embedding_matrix.shape
+        self.batch_size = hp.Int('batch_size', min_value=16, max_value=128, step=16)
         model.add(Embedding(input_dim=vocab_size, output_dim=embedding_dim,
                             weights=[self.embedding_matrix],
                             input_length=self.max_sequence_length,
@@ -26,15 +28,16 @@ class HyperLSTM(kt.HyperModel):
         return model
 
 
-def initialize_and_train_lstm(embedding_matrix, max_tweet_len, train_tweet_padded_embeddings, train_labels_one_hot,
-                              save_data=False, load_data=False):
+def initialize_and_train_hyper_lstm(embedding_matrix, max_tweet_len,
+                                    train_tweet_padded_embeddings, train_labels_one_hot,
+                                    save_data=False, load_data=False):
     print("LSTM")
     if not load_data:
         model = HyperLSTM(embedding_matrix, max_tweet_len, num_classes=20)
         tuner = kt.Hyperband(
             model,
             objective="accuracy",
-            max_epochs=10,
+            max_epochs=100,
             factor=3,
             overwrite=True,
             directory="hyper_model",
@@ -52,9 +55,10 @@ def initialize_and_train_lstm(embedding_matrix, max_tweet_len, train_tweet_padde
         best_batch_size = best_hps.get('batch_size')
         model.fit(train_tweet_padded_embeddings, train_labels_one_hot, epochs=50, batch_size=best_batch_size)
 
-        if save_data:
-            save(model, '../models/hyper_lstm_model.pkl')
     else:
         model = load('../models/hyper_lstm_model.pkl')
+
+    if save_data:
+        save(model, '../models/hyper_lstm_model.pkl')
 
     return model
