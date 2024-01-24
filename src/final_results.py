@@ -91,9 +91,9 @@ def create_word2vec_and_word2int(train_tweets, save_data=False, load_data=False)
 def main():
     # preprocess
     tv_tweets, tv_labels, tv_labels_one_hot, test_tweets, test_labels, test_labels_one_hot \
-        = preprocess(save_data=True, load_data=False)
+        = preprocess(save_data=False, load_data=True)
 
-    w2v_model, w2i_map, max_tweet_len = create_word2vec_and_word2int(tv_tweets, save_data=True, load_data=False)
+    w2v_model, w2i_map, max_tweet_len = create_word2vec_and_word2int(tv_tweets, save_data=False, load_data=True)
 
     # create embeddings
     tv_tweet_mean_embeddings, \
@@ -101,19 +101,19 @@ def main():
         tv_tweet_padded_embeddings, \
         test_tweet_padded_embeddings, \
         embedding_matrix \
-        = embed(w2v_model, w2i_map, max_tweet_len, tv_tweets, test_tweets, save_data=True, load_data=False)
+        = embed(w2v_model, w2i_map, max_tweet_len, tv_tweets, test_tweets, save_data=False, load_data=True)
 
     # create and train models
     baseline = initialize_and_train_baseline_final(tv_tweet_mean_embeddings, tv_labels,
-                                                   save_data=True, load_data=False)
+                                                   save_data=False, load_data=True)
 
     model = initialize_and_train_lstm(embedding_matrix, max_tweet_len, 100, 20, 32, 'lstm',
                                       tv_tweet_padded_embeddings, tv_labels_one_hot,
-                                      save_data=True, load_data=False)
+                                      save_data=False, load_data=True)
 
     hyper_model = initialize_and_train_lstm(embedding_matrix, max_tweet_len, 240, 50, 64, 'hyper',
                                             tv_tweet_padded_embeddings, tv_labels_one_hot,
-                                            save_data=True, load_data=False)
+                                            save_data=False, load_data=True)
 
     # evaluate models
     print(f'Random guess:         {np.max(np.unique(test_labels, return_counts=True)[1]) / test_labels.size * 100}')
