@@ -24,3 +24,16 @@ def initialize_and_train_baseline(train_tweet_mean_embeddings, train_labels, sav
     if save_data:
         save(baseline, '../models/baseline_model.pkl')
     return baseline
+
+
+def initialize_and_train_baseline_final(train_tweet_mean_embeddings, train_labels, save_data=False, load_data=False):
+    print("Baseline")
+    if not load_data:
+        baseline = Baseline()
+        baseline.train(train_tweet_mean_embeddings, train_labels)
+    else:
+        baseline = load('../models/baseline_final.pkl')
+
+    if save_data:
+        save(baseline, '../models/baseline_final.pkl')
+    return baseline

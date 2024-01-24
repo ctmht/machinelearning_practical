@@ -5,12 +5,12 @@ from saving_loading import save, load
 
 
 class LSTM:
-    def __init__(self, embedding_matrix, max_sequence_length, num_classes):
+    def __init__(self, embedding_matrix, max_sequence_length, num_classes, units):
         self.max_sequence_length = max_sequence_length
         self.model = Sequential()
-        self.build_model(embedding_matrix, num_classes)
+        self.build_model(embedding_matrix, num_classes, units)
 
-    def build_model(self, embedding_matrix, num_classes):
+    def build_model(self, embedding_matrix, num_classes, units):
 
         # Retrieve the weights from the Word2Vec model
         vocab_size, embedding_dim = embedding_matrix.shape
@@ -18,7 +18,7 @@ class LSTM:
         # Build model
         self.model.add(Embedding(input_dim=vocab_size, output_dim=embedding_dim, weights=[embedding_matrix],
                                  input_length=self.max_sequence_length, trainable=False))
-        self.model.add(keras_LSTM(units=100, return_sequences=False))
+        self.model.add(keras_LSTM(units=units, return_sequences=False))
         self.model.add(Dense(num_classes, activation='softmax'))
 
         # Compile model
@@ -35,16 +35,17 @@ class LSTM:
         return self.model.evaluate(X, y, verbose=0)
 
 
-def initialize_and_train_lstm(embedding_matrix, max_tweet_len, train_tweet_padded_embeddings, train_labels_one_hot,
+def initialize_and_train_lstm(embedding_matrix, max_tweet_len, units, epochs, batch_size, name,
+                              train_tweet_padded_embeddings, train_labels_one_hot,
                               save_data=False, load_data=False):
     print("LSTM")
     if not load_data:
-        model = LSTM(embedding_matrix, max_tweet_len, num_classes=20)
+        model = LSTM(embedding_matrix, max_tweet_len, num_classes=20, units=units)
         print(model.model.summary())
-        model.train(train_tweet_padded_embeddings, train_labels_one_hot, epochs=20, batch_size=32)
+        model.train(train_tweet_padded_embeddings, train_labels_one_hot, epochs=epochs, batch_size=batch_size)
     else:
-        model = load('../models/lstm_model.pkl')
+        model = load('../models/' + name + '.pkl')
 
     if save_data:
-        save(model, '../models/lstm_model.pkl')
+        save(model, '../models/' + name + '.pkl')
     return model

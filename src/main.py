@@ -37,9 +37,9 @@ def create_word2vec_and_word2int(train_tweets, save_data=False, load_data=False)
 def main():
     # preprocess
     train_tweets, train_labels, train_labels_one_hot, val_tweets, val_labels, val_labels_one_hot \
-        = preprocess(save_data=False, load_data=True)
+        = preprocess(save_data=True, load_data=False)
 
-    w2v_model, w2i_map, max_tweet_len = create_word2vec_and_word2int(train_tweets, save_data=False, load_data=True)
+    w2v_model, w2i_map, max_tweet_len = create_word2vec_and_word2int(train_tweets, save_data=True, load_data=False)
 
     # create embeddings
     train_tweet_mean_embeddings, \
@@ -47,19 +47,19 @@ def main():
         train_tweet_padded_embeddings, \
         val_tweet_padded_embeddings, \
         embedding_matrix \
-        = embed(w2v_model, w2i_map, max_tweet_len, train_tweets, val_tweets, save_data=False, load_data=True)
+        = embed(w2v_model, w2i_map, max_tweet_len, train_tweets, val_tweets, save_data=True, load_data=False)
 
     # create and train models
     baseline = initialize_and_train_baseline(train_tweet_mean_embeddings, train_labels,
-                                             save_data=False, load_data=True)
+                                             save_data=True, load_data=False)
 
-    model = initialize_and_train_lstm(embedding_matrix, max_tweet_len,
+    model = initialize_and_train_lstm(embedding_matrix, max_tweet_len, 100, 20, 32, 'lstm',
                                       train_tweet_padded_embeddings, train_labels_one_hot,
-                                      save_data=False, load_data=True)
+                                      save_data=True, load_data=False)
 
-    hyper_model = initialize_and_train_hyper_lstm(embedding_matrix, max_tweet_len,
-                                                  train_tweet_padded_embeddings, train_labels_one_hot,
-                                                  save_data=False, load_data=True)
+    hyper_model = initialize_and_train_lstm(embedding_matrix, max_tweet_len, 240, 50, 64, 'hyper',
+                                            train_tweet_padded_embeddings, train_labels_one_hot,
+                                            save_data=True, load_data=False)
 
     # evaluate models
     print(f'Random guess:         {np.max(np.unique(val_labels, return_counts=True)[1]) / val_labels.size * 100}')

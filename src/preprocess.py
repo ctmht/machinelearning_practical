@@ -29,4 +29,4 @@ def preprocess(save_data=False, load_data=False):
         save((train_tweets, train_labels, train_labels_one_hot), '../processed_data/train.pkl')
         save((val_tweets, val_labels, val_labels_one_hot), '../processed_data/val.pkl')
 
-    return train_tweets, train_labels, train_labels_one_hot, train_tweets, train_labels, train_labels_one_hot
+    return train_tweets, train_labels, train_labels_one_hot, val_tweets, val_labels, val_labels_one_hot

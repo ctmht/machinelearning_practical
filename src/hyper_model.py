@@ -21,7 +21,7 @@ class HyperLSTM(kt.HyperModel):
                             input_length=self.max_sequence_length,
                             trainable=False))
 
-        model.add(LSTM(hp.Int("units", min_value=30, max_value=300, step=30), return_sequences=False))
+        model.add(LSTM(240, return_sequences=False))
         model.add(Dense(self.num_classes, activation='softmax'))
 
         model.compile(optimizer='adam', loss='categorical_crossentropy', metrics=['accuracy'])
@@ -53,6 +53,7 @@ def initialize_and_train_hyper_lstm(embedding_matrix, max_tweet_len,
         # Retrain the model with the best hyperparameters
         model = model.build(best_hps)
         best_batch_size = best_hps.get('batch_size')
+        print(best_batch_size)
         model.fit(train_tweet_padded_embeddings, train_labels_one_hot, epochs=50, batch_size=best_batch_size)
 
     else:
@@ -62,3 +63,5 @@ def initialize_and_train_hyper_lstm(embedding_matrix, max_tweet_len,
         save(model, '../models/hyper_lstm_model.pkl')
 
     return model
+
+# hyperparams: 240 units, 50 epochs, 64 batch_size
