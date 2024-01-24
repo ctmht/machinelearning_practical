@@ -2,6 +2,8 @@ import re
 import spacy
 from nltk.corpus import stopwords
 
+import wordsegment
+
 
 class Tweet:
     """ Container class for a tweet handling sentence-level preprocessing """
@@ -26,8 +28,11 @@ class Tweet:
         Return:
             self.prc_tweet: list of lemmas following these preprocessing steps
         """
+        # Split hashtags
+        prc = Tweet.split_hashtags(self.tweet)
+
         # Clean non-words
-        prc = Tweet.clean_nonwords(self.tweet)
+        prc = Tweet.clean_nonwords(prc)
 
         # Lemmatize string (not removing stopwords now)
         self.prc_nlp = Tweet.nlp(prc)
@@ -72,3 +77,20 @@ class Tweet:
         return [
             lemma for lemma in lemmas if lemma not in Tweet.stop_words
         ]
+
+    @staticmethod
+    def split_hashtags(text: str) -> str:
+        pattern = r"#(\w+)"
+        words = text.split()
+        for index, word in enumerate(words):
+            if re.match(pattern, word):
+                split_words = Tweet.split_word(word)
+
+                text = text.replace(word, split_words)
+        return text
+
+    @staticmethod
+    def split_word(word: str) -> str:
+        split_words = wordsegment.segment(word)
+
+        return " ".join(str(word) for word in split_words)

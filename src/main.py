@@ -1,26 +1,47 @@
 import pandas as pd
+import sklearn.metrics as skmt
 
 from src.processor import Processor
 from src.embedder import Embedder
 from src.decision_tree import DecisionTree
+from src.util import load
 
 
 def main():
     # LOAD DATA
-    load_from_files = False     # load from files if True, preprocess if False
+    load_from_files = True     # load from files if True, preprocess if False
     data_folder = "../data/"
 
+    print("Preprocessing")
     # Preprocessing
     processor = Processor(data_folder)
-    data = processor.get_data(from_files = load_from_files)
+    data = processor.get_data(
+        from_files = load_from_files,
+        augmented = True
+    )
     df = pd.DataFrame(data)
-    print("\nData:\n", df, end="\n\n")
+    train_df = df.query("type == 'train'")
+    val_df = df.query("type == 'val'")
+    test_df = df.query("type == 'test'")
+    print(df)
 
+    print("Creating embeddings")
     # Embeddings
     embedder = Embedder(data_folder)
     embedder.train_embeddings(df["text"])
     embedder.save_model()
 
+    # Metrics
+    metrics = [
+        skmt.accuracy_score,
+        skmt.f1_score,
+        skmt.confusion_matrix
+    ]
+    metric_names = [
+        "Accuracy", "F1-score", "Confusion Matrix"
+    ]
+
+    print("Baseline definition, training, and validation")
     # Baseline
     dt_hpar = {
         "criterion": "entropy",
@@ -28,9 +49,14 @@ def main():
         "max_leaf_nodes": 1000
     }
     baseline = DecisionTree(processor, embedder, **dt_hpar)
-    baseline.train(df)
 
-    # TODO: Baseline and LSTM classes with docs, inheriting from Model
+    baseline.train(train_df["text"], train_df["label"])
+    predi = baseline.predict(val_df["text"])
+    evalu = baseline.evaluate(predi, val_df["label"], metrics)
+
+    for metric_name, ev in zip(metric_names, evalu):
+        print(metric_name + ":")
+        print(ev)
 
     # Save to memory and create embeddings
     # print("Creating embeddings")

@@ -1,7 +1,10 @@
-import io
 from collections.abc import Iterator
 
+import wordsegment
+
 from src.tweet import Tweet
+from src.augmenter import Augmenter
+from src.util import load
 
 
 class Processor:
@@ -21,8 +24,11 @@ class Processor:
         # Define paths
         self.tf = folder_path
         self.pf = folder_path + "prc_data/"
+        self.af = folder_path + "aug_data/"
 
-    def get_data(self, from_files: bool=True) -> dict:
+        wordsegment.load()
+
+    def get_data(self, from_files: bool=True, augmented: bool=False) -> dict:
         """
         Get preprocessed data formatted as a dictionary
         Return:
@@ -30,32 +36,33 @@ class Processor:
                 data text (preprocessed list of lemmas)
         """
         if from_files:
-            return self._get_data_from_files()
+            return self._get_data_from_files(augmented)
         else:
-            return self._get_data_from_preprocessing()
+            print("Getting files from preprocessing", flush = True)
+            data = self._get_data_from_preprocessing(augmented)
 
-    def _get_data_from_files(self) -> dict:
+            return data
+
+    def _get_data_from_files(self, augmented: bool) -> dict:
         """ Get already preprocessed data from files """
         data = {"type": [], "label": [], "text": []}
         for target in Processor.targets:
-            tfile, lfile = self._load(self.pf, target, 'r', "_prc")
+            path = self.af if augmented and target == "train" else self.pf
+            proctype = "_aug" if augmented and target == "train" else "_prc"
+            tfile, lfile = load(path, target, 'r', proctype)
 
-            all_text = tfile.readlines()
-            all_labs = lfile.readlines()
-
-            for tw, lab in zip(all_text, all_labs):
+            for tw, lab in zip(tfile.readlines(), lfile.readlines()):
                 data["type"].append(target)
                 data["label"].append(int(lab))
                 data["text"].append(tw[:-1].split(' '))
 
         return data
 
-    def _get_data_from_preprocessing(self) -> dict:
+    def _get_data_from_preprocessing(self, augmented: bool) -> dict:
         """ Preprocess data and return results """
         data = {"type": [], "label": [], "text": []}
-        for yld_res in self._preprocess_files(
-                aug = False, res_yield = True
-            ):
+
+        for yld_res in self._preprocess_files(augmented, res_yield = True):
             # Add data type to entries of this step
             data["type"].extend([yld_res["target"]] * len(yld_res["data"]))
 
@@ -68,63 +75,56 @@ class Processor:
 
     def _preprocess_files(
             self,
-            aug: bool=False,
+            augment: bool,
             res_yield: bool=False
         ) -> Iterator[dict]:
         """
-        Applies preprocessing to files and stores into new files, optionally
-        augmenting the training data
+        Applies preprocessing to files and stores into new files
         Args:
-            aug: whether to augment the training data or not
             res_yield: whether to yield what this call preprocesses
         """
         for target in Processor.targets:
             # Load the new files
-            self._load_target(target)
+            print("Preprocessing " + target)
 
-            aug_this = aug if target == "train" else False
-            if res_yield:
+            if not res_yield:
+                self._preprocess_textlab_pair(target, False)
+            elif target != "train" or not augment:
                 yield {
                     "target": target,
-                    "data": self._preprocess_textlab_pair(aug_this, True)
+                    "data": self._preprocess_textlab_pair(target, True)
                 }
             else:
-                self._preprocess_textlab_pair(aug_this, False)
+                # self._preprocess_textlab_pair(target, False)
+                yield {
+                    "target": target,
+                    "data": self._augment_textlab_pair(True)
+                }
 
     def _preprocess_textlab_pair(
             self,
-            augment: bool=False,
+            target: str,
             res_return: bool=False
         ) -> list[(list[str], int)] | None:
         """
         Loop through entries in the loaded files and apply preprocessing
         Args:
-            augment: whether to augment (can be true for training set only)
             res_return: whether to also return the saved processed data
         """
+        self._load_target(target)
+
         if res_return:
             prc_data: [([str], int)] = []
 
-        i: int = 0 # TODO: let this go till the end of the files
-
         for tweet, label in zip(self.target_tfile, self.target_lfile):
             # Get preprocessed original tweet
-            to_write: list[list[str]] = [self.preprocess(tweet)]
+            prc_tweet: list[str] = self.preprocess(tweet)
 
-            if augment:
-                pass # TODO: extend to_write with augmented tweets
-
-            for prc_tweet in to_write:
-                # Add original and augmented tweets to processed files
-                self.prc_target_tfile.write(" ".join(prc_tweet) + '\n')
-                self.prc_target_lfile.write(label)
+            self.prc_target_tfile.write(" ".join(prc_tweet) + '\n')
+            self.prc_target_lfile.write(label)
 
             if res_return:
-                prc_data.extend([(tw, int(label)) for tw in to_write])
-
-            i += 1
-            if i == 2:
-                break # TODO: let this go till the end of the files
+                prc_data.append((prc_tweet, int(label)))
 
         if res_return:
             return prc_data
@@ -136,21 +136,20 @@ class Processor:
 
     def _load_target(self, target: str) -> None:
         """ Reloads the target and processed files into class members """
-        self.target_tfile, self.target_lfile = self._load(
+        print("Loading target " + target, flush=True)
+
+        self.target_tfile, self.target_lfile = load(
             self.tf, target, 'r'
         )
-        self.prc_target_tfile, self.prc_target_lfile = self._load(
+        self.prc_target_tfile, self.prc_target_lfile = load(
             self.pf, target, 'w', "_prc"
         )
 
-    @staticmethod
-    def _load(ident: str, target: str, intype: str= 'r', suff: str= "")\
-            -> (io.FileIO, io.FileIO):
-        """ Get text and labels files """
-        tpath = ident + target + "_text" + suff + ".txt"
-        lpath = ident + target + "_labels" + suff + ".txt"
+    def _augment_textlab_pair(self, read_results: bool=False)\
+            -> list[([str], int)] | None:
+        augmenter = Augmenter(self.tf)
+        augmenter.augment()
 
-        tfile = open(tpath, intype, encoding="utf-8")
-        lfile = open(lpath, intype, encoding="utf-8")
-
-        return tfile, lfile
+        if read_results:
+            aug_data: list[(list[str], int)] = augmenter.read_augdata()
+            return aug_data

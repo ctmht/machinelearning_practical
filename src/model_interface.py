@@ -38,17 +38,17 @@ class ModelInterface:
         """
         return self.model.predict(indata)
 
-    @staticmethod # maybe redundant?
+    @staticmethod
     def _evaluate_prediction(
             pred_out: np.array,
             true_out: np.array,
-            scoring
+            metric
         ):
         """
         Use scoring to assess classification quality
         Args:
             pred_out: predicted outputs
             true_out: true outputs
-            scoring: function to compute classification evaluation
+            metric: function to compute classification evaluation
         """
-        return scoring(pred_out, true_out)
+        return metric(pred_out, true_out)

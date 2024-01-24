@@ -13,7 +13,7 @@ class LSTM(ModelInterface):
 
         self.model = Sequential()
 
-        self.build_model(max_sequence_length = 20) #????
+        self.build_model(max_sequence_length = 20) # ????
 
     def build_model(self, max_sequence_length):
         # Retrieve the embeddings from the Word2Vec model
