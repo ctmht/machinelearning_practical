@@ -6,7 +6,7 @@ from preprocessing.text_preprocessing import longest_preprocessed_tweet
 from gensim.models import Word2Vec
 from baseline import initialize_and_train_baseline_final
 from model import initialize_and_train_lstm
-from hyper_model import initialize_and_train_hyper_lstm
+from Plotter import _plot_matrix, _plot_accuracy
 from saving_loading import save, load
 from sklearn.metrics import f1_score
 
@@ -152,6 +152,12 @@ def main():
 
     f1_macro = f1_score(test_labels, hp_label_predictions, average='macro')
     print(f'Hyper Macro F1 Score:    {f1_macro * 100}')
+
+    _plot_matrix(test_labels, list(label_predictions))
+    # _plot_accuracy(load('../models/train_history.pkl'))
+    _plot_accuracy(load('../models/train_history_with_validation.pkl'))
+    print(np.unique(test_labels, return_counts=True)[1])
+    print(np.unique(label_predictions, return_counts=True)[1])
 
 
 if __name__ == '__main__':

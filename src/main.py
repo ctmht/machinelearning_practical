@@ -7,7 +7,7 @@ from preprocessing.text_preprocessing import longest_preprocessed_tweet
 from gensim.models import Word2Vec
 from baseline import initialize_and_train_baseline
 from model import initialize_and_train_lstm
-from hyper_model import initialize_and_train_hyper_lstm
+from Plotter import _plot_matrix, _plot_accuracy
 from saving_loading import save, load
 from sklearn.metrics import f1_score
 
@@ -37,9 +37,9 @@ def create_word2vec_and_word2int(train_tweets, save_data=False, load_data=False)
 def main():
     # preprocess
     train_tweets, train_labels, train_labels_one_hot, val_tweets, val_labels, val_labels_one_hot \
-        = preprocess(save_data=True, load_data=False)
+        = preprocess(save_data=False, load_data=True)
 
-    w2v_model, w2i_map, max_tweet_len = create_word2vec_and_word2int(train_tweets, save_data=True, load_data=False)
+    w2v_model, w2i_map, max_tweet_len = create_word2vec_and_word2int(train_tweets, save_data=False, load_data=True)
 
     # create embeddings
     train_tweet_mean_embeddings, \
@@ -47,19 +47,20 @@ def main():
         train_tweet_padded_embeddings, \
         val_tweet_padded_embeddings, \
         embedding_matrix \
-        = embed(w2v_model, w2i_map, max_tweet_len, train_tweets, val_tweets, save_data=True, load_data=False)
+        = embed(w2v_model, w2i_map, max_tweet_len, train_tweets, val_tweets, save_data=False, load_data=True)
 
     # create and train models
     baseline = initialize_and_train_baseline(train_tweet_mean_embeddings, train_labels,
-                                             save_data=True, load_data=False)
+                                             save_data=False, load_data=True)
 
     model = initialize_and_train_lstm(embedding_matrix, max_tweet_len, 100, 20, 32, 'lstm',
                                       train_tweet_padded_embeddings, train_labels_one_hot,
-                                      save_data=True, load_data=False)
+                                      (val_tweet_padded_embeddings, val_labels_one_hot),
+                                      save_data=False, load_data=True)
 
     hyper_model = initialize_and_train_lstm(embedding_matrix, max_tweet_len, 240, 50, 64, 'hyper',
                                             train_tweet_padded_embeddings, train_labels_one_hot,
-                                            save_data=True, load_data=False)
+                                            save_data=False, load_data=True)
 
     # evaluate models
     print(f'Random guess:         {np.max(np.unique(val_labels, return_counts=True)[1]) / val_labels.size * 100}')
@@ -98,6 +99,8 @@ def main():
 
     f1_macro = f1_score(val_labels, hp_label_predictions, average='macro')
     print(f'Hyper Macro F1 Score:    {f1_macro * 100}')
+
+    _plot_accuracy(load('../models/train_history_with_validation.pkl'))
 
 
 if __name__ == '__main__':

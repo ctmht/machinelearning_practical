@@ -24,8 +24,9 @@ class LSTM:
         # Compile model
         self.model.compile(optimizer='adam', loss='categorical_crossentropy', metrics=['accuracy'])
 
-    def train(self, X, y, epochs=1, batch_size=None):
-        self.model.fit(X, y, epochs=epochs, batch_size=batch_size)
+    def train(self, X, y, epochs=1, batch_size=None, val_data=None):
+        history = self.model.fit(X, y, epochs=epochs, batch_size=batch_size, validation_data=val_data)
+        save(history, '../models/train_history_with_validation.pkl')
 
     def predict(self, X):
         ret = self.model.predict(X)
@@ -36,13 +37,14 @@ class LSTM:
 
 
 def initialize_and_train_lstm(embedding_matrix, max_tweet_len, units, epochs, batch_size, name,
-                              train_tweet_padded_embeddings, train_labels_one_hot,
+                              train_tweet_padded_embeddings, train_labels_one_hot, val_data=None,
                               save_data=False, load_data=False):
     print("LSTM")
     if not load_data:
         model = LSTM(embedding_matrix, max_tweet_len, num_classes=20, units=units)
         print(model.model.summary())
-        model.train(train_tweet_padded_embeddings, train_labels_one_hot, epochs=epochs, batch_size=batch_size)
+        model.train(train_tweet_padded_embeddings, train_labels_one_hot, epochs=epochs, batch_size=batch_size,
+                    val_data=val_data)
     else:
         model = load('../models/' + name + '.pkl')
 

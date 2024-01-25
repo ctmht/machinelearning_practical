@@ -16,6 +16,7 @@ pip install fastapi
 pip install "uvicorn[standard]"
 pip install wordsegment
 pip install keras-tuner -q
+pip install seaborn
 
 
 In the python shell (type python in the terminal to start):
